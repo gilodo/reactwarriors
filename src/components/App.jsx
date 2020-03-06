@@ -1,8 +1,8 @@
 import React from "react";
 import { moviesData } from "../moviesData"; // Убирает необходимость в export default (см. также 1-ю строчку moviesData.js)
 import MovieItem from "./MovieItem";
-
-
+import { API_URL, API_KEY_3 } from "../utils/api";
+import MoviesSortTabs from "./MoviesSortTabs"
 
 class App extends React.Component {
   constructor() {
@@ -10,7 +10,8 @@ class App extends React.Component {
 
     this.state = {
       movies: moviesData,
-      moviesWillWatch: []
+      moviesWillWatch: [],
+      sort_by: "revenue.desc"
     }
 
     console.log("constructor")
@@ -18,7 +19,21 @@ class App extends React.Component {
 
   componentDidMount() {
     console.log("didMount");
-    fetch("https://api.themoviedb.org/3/discover/movie?=ae25716429c7265acbe66bf51e830702")
+    fetch(`${API_URL}/discover/movie?api_key=${API_KEY_3}&sort_by=${this.state.sort_by}`).then((response) => {
+      console.log("then")
+      return response.json()
+    }).then((data) => {
+      console.log("data", data)
+      this.setState({
+        movies: data.results
+      })
+    })
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    console.log("didUpdate");
+    console.log("prev", prevProps, prevState);
+    console.log("this", this.props, this.state);
   }
 
   removeMovie = movie => {                                            //. Исчезает проблема Cannot read property 'state' of undefined
@@ -46,14 +61,28 @@ class App extends React.Component {
     this.setState({
       moviesWillWatch: updateMoviesWillWatch
     })
-  }  
+  }
+  
+  updateSortBy = value => {
+    this.setState({
+      sort_by: value
+    });
+  };
 
   render() {                                                                            // Превращает виртуальный DOM в обычный  DOM и рендерит на страницу
-    console.log("render")
+    console.log("render", this.state.sort_by)
     return (
       <div className="container">
-        <div className="row">
+        <div className="row mt-4">
           <div className="col-9">
+            <div className="row mb-4">
+              <div className="col-12">
+                <MoviesSortTabs 
+                  sort_by={this.state.sort_by}
+                  updateSortBy={this.updateSortBy}
+                 />
+              </div>
+            </div>
             <div className="row">
               {this.state.movies.map(movie =>  {
                 return (
