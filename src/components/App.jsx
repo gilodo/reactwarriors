@@ -1,5 +1,4 @@
 import React from "react";
-import { moviesData } from "../moviesData"; // Убирает необходимость в export default (см. также 1-ю строчку moviesData.js)
 import MovieItem from "./MovieItem";
 import { API_URL, API_KEY_3 } from "../utils/api";
 import MoviesSortTabs from "./MoviesSortTabs"
@@ -9,7 +8,7 @@ class App extends React.Component {
     super();
 
     this.state = {
-      movies: moviesData,
+      movies: [],
       moviesWillWatch: [],
       sort_by: "revenue.desc"
     }
@@ -19,21 +18,31 @@ class App extends React.Component {
 
   componentDidMount() {
     console.log("didMount");
-    fetch(`${API_URL}/discover/movie?api_key=${API_KEY_3}&sort_by=${this.state.sort_by}`).then((response) => {
-      console.log("then")
-      return response.json()
-    }).then((data) => {
-      console.log("data", data)
-      this.setState({
-        movies: data.results
-      })
-    })
+    this.getMoviesFromDB();
   }
 
   componentDidUpdate(prevProps, prevState) {
     console.log("didUpdate");
     console.log("prev", prevProps, prevState);
     console.log("this", this.props, this.state);
+    if(prevState.sort_by !== this.state.sort_by) {
+      console.log("Call API");
+      this.getMoviesFromDB();
+    }
+  }
+
+  getMoviesFromDB = () => {                         // Рефакторинг - избавление от дублирующегося кода
+    fetch(`${API_URL}/discover/movie?api_key=${API_KEY_3}&sort_by=${this.state.sort_by}`
+      )
+        .then((response) => {
+          console.log("then")
+          return response.json()
+      }).then((data) => {
+        console.log("data", data)
+        this.setState({
+          movies: data.results
+        });
+      });
   }
 
   removeMovie = movie => {                                            //. Исчезает проблема Cannot read property 'state' of undefined
